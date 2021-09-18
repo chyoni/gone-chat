@@ -7,3 +7,5 @@
 - #02 Chat Server Connection
 
 - #03 Read and Write Message 1
+
+- #04 Global Chat Server DONE
