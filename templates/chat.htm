@@ -8,14 +8,36 @@
   </head>
   <body>
     <h1>GO CHAT SERVER</h1>
+    <form id="chat-form">
+      <input id="m-input" name="message" placeholder="Type a message" />
+      <button>Send</button>
+    </form>
     <script>
-      const ws = new WebSocket('ws://localhost:4000/ws');
+      const roomId = 1;
+      const ws = new WebSocket(`ws://localhost:4000/ws/${roomId}`);
       ws.onmessage = function (event) {
-        console.log(event.data);
+        console.log(JSON.parse(event.data));
       };
       ws.onclose = function (event) {
         console.log('connection closed');
       };
+
+      const form = document.querySelector('#chat-form');
+      const input = document.querySelector('#m-input');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const body = {
+          message: input.value,
+          roomId: String(roomId),
+        };
+
+        const http = new XMLHttpRequest();
+        http.open('POST', 'http://localhost:4000/message');
+        http.setRequestHeader('Content-Type', 'application/json');
+        http.send(JSON.stringify(body));
+        input.value = '';
+      });
     </script>
   </body>
 </html>
