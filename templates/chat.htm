@@ -10,6 +10,9 @@
     <h1>GO CHAT SERVER</h1>
     <script>
       const ws = new WebSocket('ws://localhost:4000/ws');
+      ws.onmessage = function (messageEvent) {
+        console.log(messageEvent.data);
+      };
     </script>
   </body>
 </html>

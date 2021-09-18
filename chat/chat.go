@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/chiwon99881/gone-chat/utils"
@@ -13,6 +14,13 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return true
 	}
-	_, err := upgrader.Upgrade(rw, r, nil)
+	conn, err := upgrader.Upgrade(rw, r, nil)
 	utils.HandleError(err)
+
+	mType, payload, err := conn.ReadMessage()
+	if err != nil {
+		fmt.Println(err.Error())
+		conn.Close()
+	}
+	conn.WriteMessage(mType, payload)
 }
