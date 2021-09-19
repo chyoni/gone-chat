@@ -1,68 +1,46 @@
 package chat
 
 import (
-	"sync"
-
 	"github.com/chiwon99881/gone-chat/utils"
 	"github.com/gorilla/websocket"
 )
 
-type Rooms struct {
-	IDs map[string]*room
-	m   sync.Mutex
-}
-
-type room struct {
-	ID      string
-	members map[string]*participant
-}
-
-type Participants struct {
-	participants map[string]*participant
-	m            sync.Mutex
-}
-
-type participant struct {
-	conn *websocket.Conn
-	hub  chan []byte
-}
-
-var Rs *Rooms = &Rooms{
+var rs *rooms = &rooms{
 	IDs: make(map[string]*room),
 }
 
-var Ps *Participants = &Participants{
+var ps *participants = &participants{
 	participants: make(map[string]*participant),
 }
 
 func (p *participant) write() {
-	defer Ps.m.Unlock()
+	defer ps.m.Unlock()
 	for {
 		m, ok := <-p.hub
 		if !ok {
-			Ps.m.Lock()
+			ps.m.Lock()
 			p.conn.Close()
-			delete(Ps.participants, p.conn.RemoteAddr().String())
+			delete(ps.participants, p.conn.RemoteAddr().String())
 			break
 		}
 
-		message := &Message{}
+		message := &payload{}
 		utils.FromBytes(message, m)
 		err := p.conn.WriteJSON(message.Message)
 		if err != nil {
-			Ps.m.Lock()
+			ps.m.Lock()
 			p.conn.Close()
-			delete(Ps.participants, p.conn.RemoteAddr().String())
+			delete(ps.participants, p.conn.RemoteAddr().String())
 			break
 		}
 	}
 }
 
 func initMember(conn *websocket.Conn, roomID string) {
-	Ps.m.Lock()
-	Rs.m.Lock()
-	defer Ps.m.Unlock()
-	defer Rs.m.Unlock()
+	ps.m.Lock()
+	rs.m.Lock()
+	defer ps.m.Unlock()
+	defer rs.m.Unlock()
 
 	p := &participant{
 		conn: conn,
@@ -73,14 +51,14 @@ func initMember(conn *websocket.Conn, roomID string) {
 		members: make(map[string]*participant),
 	}
 
-	room, exist := Rs.IDs[roomID]
+	room, exist := rs.IDs[roomID]
 	if exist {
 		room.members[p.conn.RemoteAddr().String()] = p
 	} else {
 		r.members[p.conn.RemoteAddr().String()] = p
-		Rs.IDs[roomID] = r
+		rs.IDs[roomID] = r
 	}
 
-	Ps.participants[p.conn.RemoteAddr().String()] = p
+	ps.participants[p.conn.RemoteAddr().String()] = p
 	go p.write()
 }

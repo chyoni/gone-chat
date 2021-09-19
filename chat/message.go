@@ -6,20 +6,15 @@ import (
 	"github.com/chiwon99881/gone-chat/utils"
 )
 
-type Message struct {
-	RoomID  string `json:"roomId"`
-	Message string `json:"message"`
-}
-
 func HandleMessage(message, roomID string) {
-	Rs.m.Lock()
-	defer Rs.m.Unlock()
+	rs.m.Lock()
+	defer rs.m.Unlock()
 
-	room, ok := Rs.IDs[roomID]
+	room, ok := rs.IDs[roomID]
 	if !ok {
 		fmt.Println("error")
 	}
-	m := &Message{
+	m := &payload{
 		RoomID:  roomID,
 		Message: message,
 	}

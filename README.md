@@ -13,3 +13,5 @@
 - #05 Private rooms chat 1
 
 - #06 Database Init 1
+
+- #07 Create User 1

@@ -9,7 +9,7 @@ import (
 
 func main() {
 	env.Start()
-	database.InitDB()
+	database.NewRepository()
 	go api.Start()
 	explorer.Start()
 }
