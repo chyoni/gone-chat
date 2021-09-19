@@ -11,3 +11,5 @@
 - #04 Global Chat Server DONE
 
 - #05 Private rooms chat 1
+
+- #06 Database Init 1
