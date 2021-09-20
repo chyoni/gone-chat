@@ -15,3 +15,5 @@
 - #06 Database Init 1
 
 - #07 Create User 1
+
+- #08 Create User 2 (Hashed Password)

@@ -1,6 +1,6 @@
 POST http://localhost:4000/user
 
 {
-    "username": "test2",
-    "password": "test2"
+    "username": "test3",
+    "password": "test3"
 }
