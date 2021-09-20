@@ -21,3 +21,7 @@
 - #09 Create Room 1
 
 - #10 Login 1
+
+- #11 Login 2 (Generate JWT)
+
+  > go get github.com/dgrijalva/jwt-go

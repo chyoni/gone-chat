@@ -16,6 +16,7 @@ type Repository interface {
 	CreateUser(username, password, alias string)
 	FindUserByID(userID uint) (*entity.User, error)
 	FindUserByUsername(username string) (*entity.User, error)
+	GetUser(userID uint) (*entity.User, error)
 	CreateRoom(participant uint) (*entity.Room, error)
 }
 
@@ -32,6 +33,9 @@ func (RepoOperator) CreateRoom(participant uint) (*entity.Room, error) {
 }
 func (RepoOperator) FindUserByUsername(username string) (*entity.User, error) {
 	return findUserByUsername(username)
+}
+func (RepoOperator) GetUser(userID uint) (*entity.User, error) {
+	return getUser(userID)
 }
 
 func NewRepository() *gorm.DB {
@@ -62,9 +66,18 @@ func findUserByID(userID uint) (*entity.User, error) {
 
 func findUserByUsername(username string) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("username", "password").Find(&user, "username = ?", username)
+	result := NewRepository().Select("id", "username", "password").Find(&user, "username = ?", username)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this username")
+	}
+	return &user, nil
+}
+
+func getUser(userID uint) (*entity.User, error) {
+	var user entity.User
+	result := NewRepository().Select("id", "username", "alias", "created_at", "updated_at").Find(&user, "id = ?", userID)
+	if result.RowsAffected != 1 {
+		return nil, errors.New("can't find user with this id")
 	}
 	return &user, nil
 }

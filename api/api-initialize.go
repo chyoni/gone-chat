@@ -25,6 +25,11 @@ func unauthorizedResponse(rw http.ResponseWriter) {
 	json.NewEncoder(rw).Encode(responseError{ErrMessage: "you are not authorized"})
 }
 
+func unprocessableEntityResponse(rw http.ResponseWriter, err error) {
+	rw.WriteHeader(http.StatusUnprocessableEntity)
+	json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
+}
+
 func ContentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")

@@ -30,11 +30,29 @@ func login(rw http.ResponseWriter, r *http.Request) {
 		badRequestResponse(rw, err)
 		return
 	}
+	if user.Username != requestLoginPayload.Username {
+		unauthorizedResponse(rw)
+		return
+	}
 	pwAsBytes := utils.ToBytes(requestLoginPayload.Password)
 	pwAsHash := utils.ToHexStringHash(pwAsBytes)
 	if user.Password != pwAsHash {
 		unauthorizedResponse(rw)
 		return
 	}
-	// generate token
+	token, err := utils.CreateToken(user.ID)
+	if err != nil {
+		unprocessableEntityResponse(rw, err)
+		return
+	}
+	me, _ := dbOperator.GetUser(user.ID)
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseLoginPayload{
+		ID:        me.ID,
+		Username:  me.Username,
+		Alias:     me.Alias,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		Token:     token,
+	})
 }

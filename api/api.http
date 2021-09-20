@@ -11,3 +11,11 @@ POST http://localhost:4000/room
 {
     "participants": [4]
 }
+
+### 
+POST http://localhost:4000/login 
+
+{
+    "username": "test",
+    "password": "test"
+}

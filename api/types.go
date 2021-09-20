@@ -20,6 +20,15 @@ type requestLoginPayload struct {
 	Password string `json:"password"`
 }
 
+type responseLoginPayload struct {
+	ID        uint   `json:"id"`
+	Username  string `json:"username"`
+	Alias     string `json:"alias"`
+	CreatedAt int    `json:"created_at"`
+	UpdatedAt int    `json:"updated_at"`
+	Token     string `json:"token"`
+}
+
 type responseError struct {
 	ErrMessage string `json:"error_message"`
 }
