@@ -36,7 +36,7 @@ func (p *participant) write() {
 	}
 }
 
-func initMember(conn *websocket.Conn, roomID string) {
+func initRoom(conn *websocket.Conn, roomID string) {
 	ps.m.Lock()
 	rs.m.Lock()
 	defer ps.m.Unlock()
