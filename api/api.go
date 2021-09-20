@@ -20,7 +20,7 @@ func message(rw http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(requestMessagePayload)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rw, "%s", responseError{errMessage: err.Error()})
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
@@ -32,11 +32,38 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(requestCreateUserPayload)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rw, "%s", responseError{errMessage: err.Error()})
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
-	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password)
+	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password, requestCreateUserPayload.Alias)
+}
+
+func createRoom(rw http.ResponseWriter, r *http.Request) {
+	requestCreateRoomPayload := &requestCreateRoomPayload{}
+	err := json.NewDecoder(r.Body).Decode(requestCreateRoomPayload)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
+		return
+	}
+	_, err = dbOperator.FindUser(requestCreateRoomPayload.Participants[0])
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
+		return
+	}
+	room, err := dbOperator.CreateRoom(requestCreateRoomPayload.Participants[0])
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
+		return
+	}
+	upgradeURL := fmt.Sprintf("http://127.0.0.1:4000/ws/%d", room.ID)
+	_, err = http.Get(upgradeURL)
+	if err != nil {
+		utils.HandleError(err)
+	}
 }
 
 func ContentTypeMiddleware(next http.Handler) http.Handler {
@@ -60,5 +87,6 @@ func Start() {
 	router.HandleFunc("/ws/{roomID:[0-9]+}", chat.UpgradeWithRoom).Methods("GET")
 	router.HandleFunc("/message", message).Methods("POST")
 	router.HandleFunc("/user", createUser).Methods("POST")
+	router.HandleFunc("/room", createRoom).Methods("POST")
 	utils.HandleError(http.ListenAndServe(":4000", handler))
 }

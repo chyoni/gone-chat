@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -12,13 +13,23 @@ import (
 )
 
 type Repository interface {
-	CreateUser(username, password string)
+	CreateUser(username, password, alias string)
+	FindUser(userID uint) (*entity.User, error)
+	CreateRoom(participant uint) (*entity.Room, error)
 }
 
 type RepoOperator struct{}
 
-func (RepoOperator) CreateUser(username, password string) {
-	createUser(username, password)
+func (RepoOperator) CreateUser(username, password, alias string) {
+	createUser(username, password, alias)
+}
+
+func (RepoOperator) FindUser(userID uint) (*entity.User, error) {
+	return findUser(userID)
+}
+
+func (RepoOperator) CreateRoom(participant uint) (*entity.Room, error) {
+	return createRoom(participant)
 }
 
 func NewRepository() *gorm.DB {
@@ -33,7 +44,31 @@ func NewRepository() *gorm.DB {
 	return db
 }
 
-func createUser(username, password string) {
-	user := entity.User{Username: username, Password: password}
+func createUser(username, password, alias string) {
+	user := entity.User{Username: username, Password: password, Alias: alias}
 	NewRepository().Create(&user)
+}
+
+func findUser(userID uint) (*entity.User, error) {
+	var user entity.User
+	result := NewRepository().Select("id", "username", "alias").Find(&user, "id =?", userID)
+	if result.RowsAffected != 1 {
+		return nil, errors.New("can't find user with this id")
+	}
+	return &user, nil
+}
+
+func createRoom(participant uint) (*entity.Room, error) {
+	var users []*entity.User
+	user, err := findUser(participant)
+	if err != nil {
+		return nil, errors.New("can't find user")
+	}
+	users = append(users, user)
+	room := entity.Room{Participants: users}
+	result := NewRepository().Create(&room)
+	if result.RowsAffected != 1 {
+		return nil, result.Error
+	}
+	return &room, nil
 }

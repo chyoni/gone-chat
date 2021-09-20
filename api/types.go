@@ -8,8 +8,13 @@ type requestMessagePayload struct {
 type requestCreateUserPayload struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Alias    string `json:"alias"`
+}
+
+type requestCreateRoomPayload struct {
+	Participants []uint `json:"participants"`
 }
 
 type responseError struct {
-	errMessage string
+	ErrMessage string `json:"error_message"`
 }

@@ -17,3 +17,5 @@
 - #07 Create User 1
 
 - #08 Create User 2 (Hashed Password)
+
+- #09 Create Room 1
