@@ -21,12 +21,12 @@ type requestLoginPayload struct {
 }
 
 type responseLoginPayload struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Alias     string `json:"alias"`
-	CreatedAt int    `json:"created_at"`
-	UpdatedAt int    `json:"updated_at"`
-	Token     string `json:"token"`
+	ID        uint              `json:"id"`
+	Username  string            `json:"username"`
+	Alias     string            `json:"alias"`
+	CreatedAt int               `json:"created_at"`
+	UpdatedAt int               `json:"updated_at"`
+	Tokens    map[string]string `json:"token"`
 }
 
 type responseError struct {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/chiwon99881/gone-chat/auth"
 	"github.com/chiwon99881/gone-chat/utils"
 )
 
@@ -40,10 +41,19 @@ func login(rw http.ResponseWriter, r *http.Request) {
 		unauthorizedResponse(rw)
 		return
 	}
-	token, err := utils.CreateToken(user.ID)
+	td, err := auth.CreateToken(user.ID)
 	if err != nil {
 		unprocessableEntityResponse(rw, err)
 		return
+	}
+	err = auth.CreateAuth(user.ID, td)
+	if err != nil {
+		unprocessableEntityResponse(rw, err)
+		return
+	}
+	tokens := map[string]string{
+		"access_token":  td.AccessToken,
+		"refresh_token": td.RefreshToken,
 	}
 	me, _ := dbOperator.GetUser(user.ID)
 	rw.WriteHeader(http.StatusOK)
@@ -53,6 +63,6 @@ func login(rw http.ResponseWriter, r *http.Request) {
 		Alias:     me.Alias,
 		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,
-		Token:     token,
+		Tokens:    tokens,
 	})
 }
