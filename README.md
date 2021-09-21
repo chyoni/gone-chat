@@ -42,3 +42,5 @@
   > cli로 redis를 실행하는 방법은 'redis-cli'
   > 'keys \*'를 입력하면 redis에 저장된 모든 key들을 출력
   > 'get [key 이름]'를 입력하면 '[key 이름]'이라는 key의 value를 출력
+
+- #13 Backend Temporary end

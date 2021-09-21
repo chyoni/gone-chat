@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/chiwon99881/gone-chat/auth"
 	"github.com/chiwon99881/gone-chat/chat"
 	"github.com/chiwon99881/gone-chat/database"
 	"github.com/chiwon99881/gone-chat/utils"
@@ -37,9 +39,29 @@ func ContentTypeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/login" {
+			tokenAuth, err := auth.ExtractTokenMetadata(r)
+			if err != nil {
+				unauthorizedResponse(w)
+				return
+			}
+			userID, err := auth.FetchAuth(tokenAuth)
+			if err != nil {
+				unauthorizedResponse(w)
+				return
+			}
+			r.Header.Add("currentUser", strconv.Itoa(int(userID)))
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func Start() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(ContentTypeMiddleware)
+	router.Use(AuthMiddleware)
 	fmt.Println("Server listening on localhost:4000")
 
 	c := cors.New(cors.Options{
@@ -53,5 +75,6 @@ func Start() {
 	router.HandleFunc("/user", createUser).Methods("POST")
 	router.HandleFunc("/room", createRoom).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
+	router.HandleFunc("/logout", logout).Methods("GET")
 	utils.HandleError(http.ListenAndServe(":4000", handler))
 }

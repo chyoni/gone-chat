@@ -22,11 +22,13 @@ type participants struct {
 }
 
 type participant struct {
-	conn *websocket.Conn
-	hub  chan []byte
+	userID string
+	conn   *websocket.Conn
+	hub    chan []byte
 }
 
 type payload struct {
 	RoomID  string `json:"roomId"`
+	FromID  string `json:"fromId"`
 	Message string `json:"message"`
 }

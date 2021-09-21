@@ -8,3 +8,8 @@ type TokenDetails struct {
 	AtExpires    int64
 	RtExpires    int64
 }
+
+type AccessDetails struct {
+	AccessUUID string
+	UserID     uint
+}

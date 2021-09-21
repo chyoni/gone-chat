@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/chiwon99881/gone-chat/chat"
-	"github.com/chiwon99881/gone-chat/utils"
 )
 
 func message(rw http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("currentUser")
 	requestMessagePayload := &requestMessagePayload{}
 	err := json.NewDecoder(r.Body).Decode(requestMessagePayload)
 	if err != nil {
@@ -17,7 +17,7 @@ func message(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
-	chat.HandleMessage(requestMessagePayload.Message, requestMessagePayload.RoomID)
+	chat.HandleMessage(requestMessagePayload.Message, requestMessagePayload.RoomID, userID)
 }
 
 func createRoom(rw http.ResponseWriter, r *http.Request) {
@@ -37,9 +37,17 @@ func createRoom(rw http.ResponseWriter, r *http.Request) {
 		badRequestResponse(rw, err)
 		return
 	}
+	bearerToken := r.Header.Get("Authorization")
 	upgradeURL := fmt.Sprintf("http://127.0.0.1:4000/ws/%d", room.ID)
-	_, err = http.Get(upgradeURL)
-	if err != nil {
-		utils.HandleError(err)
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", upgradeURL, nil)
+	req.Header.Set("Authorization", bearerToken)
+	resp, err := client.Do(req)
+
+	if err != nil || resp.StatusCode != 200 {
+		rw.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(rw).Encode(responseError{ErrMessage: "upgrade fail cause: should pass token"})
+		return
 	}
 }

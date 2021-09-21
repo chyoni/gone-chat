@@ -66,3 +66,18 @@ func login(rw http.ResponseWriter, r *http.Request) {
 		Tokens:    tokens,
 	})
 }
+
+func logout(rw http.ResponseWriter, r *http.Request) {
+	au, err := auth.ExtractTokenMetadata(r)
+	if err != nil {
+		unauthorizedResponse(rw)
+		return
+	}
+	deleted, err := auth.DeleteAuth(au.AccessUUID)
+	if deleted == 0 || err != nil {
+		unauthorizedResponse(rw)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseCommonPayload{Message: "Successfully logged out"})
+}

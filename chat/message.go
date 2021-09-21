@@ -6,7 +6,7 @@ import (
 	"github.com/chiwon99881/gone-chat/utils"
 )
 
-func HandleMessage(message, roomID string) {
+func HandleMessage(message, roomID, userID string) {
 	rs.m.Lock()
 	defer rs.m.Unlock()
 
@@ -16,6 +16,7 @@ func HandleMessage(message, roomID string) {
 	}
 	m := &payload{
 		RoomID:  roomID,
+		FromID:  userID,
 		Message: message,
 	}
 	mBytes := utils.ToBytes(m)

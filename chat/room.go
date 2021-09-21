@@ -20,31 +20,32 @@ func (p *participant) write() {
 		if !ok {
 			ps.m.Lock()
 			p.conn.Close()
-			delete(ps.participants, p.conn.RemoteAddr().String())
+			delete(ps.participants, p.userID)
 			break
 		}
 
 		message := &payload{}
 		utils.FromBytes(message, m)
-		err := p.conn.WriteJSON(message.Message)
+		err := p.conn.WriteJSON(message)
 		if err != nil {
 			ps.m.Lock()
 			p.conn.Close()
-			delete(ps.participants, p.conn.RemoteAddr().String())
+			delete(ps.participants, p.userID)
 			break
 		}
 	}
 }
 
-func initRoom(conn *websocket.Conn, roomID string) {
+func initRoom(conn *websocket.Conn, roomID, userID string) {
 	ps.m.Lock()
 	rs.m.Lock()
 	defer ps.m.Unlock()
 	defer rs.m.Unlock()
 
 	p := &participant{
-		conn: conn,
-		hub:  make(chan []byte),
+		userID: userID,
+		conn:   conn,
+		hub:    make(chan []byte),
 	}
 	r := &room{
 		ID:      roomID,
@@ -53,12 +54,12 @@ func initRoom(conn *websocket.Conn, roomID string) {
 
 	room, exist := rs.IDs[roomID]
 	if exist {
-		room.members[p.conn.RemoteAddr().String()] = p
+		room.members[p.userID] = p
 	} else {
-		r.members[p.conn.RemoteAddr().String()] = p
+		r.members[p.userID] = p
 		rs.IDs[roomID] = r
 	}
 
-	ps.participants[p.conn.RemoteAddr().String()] = p
+	ps.participants[p.userID] = p
 	go p.write()
 }

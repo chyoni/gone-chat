@@ -29,6 +29,10 @@ type responseLoginPayload struct {
 	Tokens    map[string]string `json:"token"`
 }
 
+type responseCommonPayload struct {
+	Message string `json:"message"`
+}
+
 type responseError struct {
 	ErrMessage string `json:"error_message"`
 }
