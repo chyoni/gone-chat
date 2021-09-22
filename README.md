@@ -50,3 +50,5 @@
 - #15 Update User Password
 
   > should know why beforeupdate hook have limitation, then so i written hashed password code on api func
+
+- #16 Delete User

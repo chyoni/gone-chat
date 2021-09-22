@@ -17,6 +17,7 @@ type Repository interface {
 	FindUserByID(userID uint) (*entity.User, error)
 	FindUserByUsername(username string) (*entity.User, error)
 	GetUser(userID uint) (*entity.User, error)
+	DeleteUser(userID uint) error
 	UpdateUserAlias(userID uint, alias string) (*entity.User, error)
 	UpdatePassword(userID uint, password string) error
 	CheckUserPassword(userID uint, hashedPassword string) bool
@@ -48,6 +49,9 @@ func (RepoOperator) UpdatePassword(userID uint, password string) error {
 }
 func (RepoOperator) CheckUserPassword(userID uint, hashedPassword string) bool {
 	return checkUserPassword(userID, hashedPassword)
+}
+func (RepoOperator) DeleteUser(userID uint) error {
+	return deleteUser(userID)
 }
 
 func NewRepository() *gorm.DB {
@@ -125,6 +129,14 @@ func getUser(userID uint) (*entity.User, error) {
 		return nil, errors.New("can't find user with this id")
 	}
 	return &user, nil
+}
+
+func deleteUser(userID uint) error {
+	result := NewRepository().Delete(&entity.User{}, userID)
+	if result.RowsAffected != 1 {
+		return result.Error
+	}
+	return nil
 }
 
 func createRoom(participant uint) (*entity.Room, error) {

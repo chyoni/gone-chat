@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/chiwon99881/gone-chat/auth"
 	"github.com/chiwon99881/gone-chat/utils"
@@ -24,11 +23,33 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password, requestCreateUserPayload.Alias)
 }
 
+func deleteUser(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, ok := params["userID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing user_id in parameter"))
+		return
+	}
+	currentUser := r.Header.Get("currentUser")
+	if currentUser != userID {
+		unauthorizedResponse(rw)
+		return
+	}
+	userIDAsUint := utils.ToUintFromString(userID)
+	err := dbOperator.DeleteUser(userIDAsUint)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseCommonPayload{Message: "user deleted successfully"})
+}
+
 func updateUserAlias(rw http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID, ok := params["userID"]
 	if !ok {
-		badRequestResponse(rw, errors.New("missing user_id in params"))
+		badRequestResponse(rw, errors.New("missing user_id in parameter"))
 		return
 	}
 	requestUpdateUserAliasPayload := &requestUpdateUserAliasPayload{}
@@ -44,11 +65,8 @@ func updateUserAlias(rw http.ResponseWriter, r *http.Request) {
 		unauthorizedResponse(rw)
 		return
 	}
-	userIDAsUint, err := strconv.ParseUint(userID, 10, 64)
-	if err != nil {
-		utils.HandleError(err)
-	}
-	updatedUser, err := dbOperator.UpdateUserAlias(uint(userIDAsUint), requestUpdateUserAliasPayload.Alias)
+	userIDAsUint := utils.ToUintFromString(userID)
+	updatedUser, err := dbOperator.UpdateUserAlias(userIDAsUint, requestUpdateUserAliasPayload.Alias)
 	if err != nil {
 		json.NewEncoder(rw).Encode(responseCommonPayload{Message: err.Error()})
 		return
@@ -65,7 +83,7 @@ func updateUserPassword(rw http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID, ok := params["userID"]
 	if !ok {
-		badRequestResponse(rw, errors.New("missing user_id in params"))
+		badRequestResponse(rw, errors.New("missing user_id in parameter"))
 		return
 	}
 	currentUser := r.Header.Get("currentUser")
@@ -82,18 +100,15 @@ func updateUserPassword(rw http.ResponseWriter, r *http.Request) {
 	}
 	currentPasswordAsBytes := utils.ToBytes(requestUpdateUserPasswordPayload.CurrentPassword)
 	currentPasswordAsHash := utils.ToHexStringHash(currentPasswordAsBytes)
-	idAsBytes, err := strconv.ParseUint(userID, 10, 64)
-	if err != nil {
-		utils.HandleError(err)
-	}
-	check := dbOperator.CheckUserPassword(uint(idAsBytes), currentPasswordAsHash)
+	userIDAsUint := utils.ToUintFromString(userID)
+	check := dbOperator.CheckUserPassword(userIDAsUint, currentPasswordAsHash)
 	if !check {
 		badRequestResponse(rw, errors.New("current password is not correct"))
 		return
 	}
 	newPwAsBytes := utils.ToBytes(requestUpdateUserPasswordPayload.NewPassword)
 	newPwAsHash := utils.ToHexStringHash(newPwAsBytes)
-	err = dbOperator.UpdatePassword(uint(idAsBytes), newPwAsHash)
+	err = dbOperator.UpdatePassword(userIDAsUint, newPwAsHash)
 	if err != nil {
 		badRequestResponse(rw, err)
 		return

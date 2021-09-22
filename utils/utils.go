@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 func HandleError(err error) {
@@ -32,4 +33,12 @@ func ToHexStringHash(data []byte) string {
 	hash := sha256.Sum256(data)
 	hexHash := fmt.Sprintf("%x", hash)
 	return hexHash
+}
+
+func ToUintFromString(aString string) uint {
+	aStringAsUint, err := strconv.ParseUint(aString, 10, 64)
+	if err != nil {
+		HandleError(err)
+	}
+	return uint(aStringAsUint)
 }
