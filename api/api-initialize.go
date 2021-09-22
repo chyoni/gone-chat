@@ -74,6 +74,7 @@ func Start() {
 	router.HandleFunc("/message", message).Methods("POST")
 	router.HandleFunc("/user", createUser).Methods("POST")
 	router.HandleFunc("/user/alias/{userID:[0-9]+}", updateUserAlias).Methods("POST")
+	router.HandleFunc("/user/password/{userID:[0-9]+}", updateUserPassword).Methods("POST")
 	router.HandleFunc("/room", createRoom).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/logout", logout).Methods("GET")

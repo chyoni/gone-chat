@@ -20,7 +20,7 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 		badRequestResponse(rw, err)
 		return
 	}
-	rw.WriteHeader(http.StatusOK)
+	rw.WriteHeader(http.StatusCreated)
 	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password, requestCreateUserPayload.Alias)
 }
 
@@ -53,10 +53,53 @@ func updateUserAlias(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(responseCommonPayload{Message: err.Error()})
 		return
 	}
+	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(responseUpdateUserAliasPayload{
 		ID:       updatedUser.ID,
 		Username: updatedUser.Username,
 		Alias:    updatedUser.Alias})
+}
+
+func updateUserPassword(rw http.ResponseWriter, r *http.Request) {
+	requestUpdateUserPasswordPayload := &requestUpdateUserPasswordPayload{}
+	params := mux.Vars(r)
+	userID, ok := params["userID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing user_id in params"))
+		return
+	}
+	currentUser := r.Header.Get("currentUser")
+	if userID != currentUser {
+		unauthorizedResponse(rw)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestUpdateUserPasswordPayload)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	currentPasswordAsBytes := utils.ToBytes(requestUpdateUserPasswordPayload.CurrentPassword)
+	currentPasswordAsHash := utils.ToHexStringHash(currentPasswordAsBytes)
+	idAsBytes, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		utils.HandleError(err)
+	}
+	check := dbOperator.CheckUserPassword(uint(idAsBytes), currentPasswordAsHash)
+	if !check {
+		badRequestResponse(rw, errors.New("current password is not correct"))
+		return
+	}
+	newPwAsBytes := utils.ToBytes(requestUpdateUserPasswordPayload.NewPassword)
+	newPwAsHash := utils.ToHexStringHash(newPwAsBytes)
+	err = dbOperator.UpdatePassword(uint(idAsBytes), newPwAsHash)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseCommonPayload{Message: "password changed successfully"})
 }
 
 func login(rw http.ResponseWriter, r *http.Request) {

@@ -15,6 +15,11 @@ type requestUpdateUserAliasPayload struct {
 	Alias string `json:"alias"`
 }
 
+type requestUpdateUserPasswordPayload struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
 type requestCreateRoomPayload struct {
 	Participants []uint `json:"participants"`
 }

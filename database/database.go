@@ -17,8 +17,10 @@ type Repository interface {
 	FindUserByID(userID uint) (*entity.User, error)
 	FindUserByUsername(username string) (*entity.User, error)
 	GetUser(userID uint) (*entity.User, error)
-	CreateRoom(participant uint) (*entity.Room, error)
 	UpdateUserAlias(userID uint, alias string) (*entity.User, error)
+	UpdatePassword(userID uint, password string) error
+	CheckUserPassword(userID uint, hashedPassword string) bool
+	CreateRoom(participant uint) (*entity.Room, error)
 }
 
 type RepoOperator struct{}
@@ -40,6 +42,12 @@ func (RepoOperator) GetUser(userID uint) (*entity.User, error) {
 }
 func (RepoOperator) UpdateUserAlias(userID uint, alias string) (*entity.User, error) {
 	return updateUserAlias(userID, alias)
+}
+func (RepoOperator) UpdatePassword(userID uint, password string) error {
+	return updatePassword(userID, password)
+}
+func (RepoOperator) CheckUserPassword(userID uint, hashedPassword string) bool {
+	return checkUserPassword(userID, hashedPassword)
 }
 
 func NewRepository() *gorm.DB {
@@ -77,6 +85,18 @@ func findUserByUsername(username string) (*entity.User, error) {
 	return &user, nil
 }
 
+func checkUserPassword(userID uint, hashedPassword string) bool {
+	var user entity.User
+	result := NewRepository().Select("password").Find(&user, "id = ?", userID)
+	if result.RowsAffected != 1 {
+		return false
+	}
+	if user.Password != hashedPassword {
+		return false
+	}
+	return true
+}
+
 func updateUserAlias(userID uint, alias string) (*entity.User, error) {
 	result := NewRepository().Model(&entity.User{}).Where("id = ?", userID).Update("alias", alias)
 	if result.RowsAffected != 1 {
@@ -87,6 +107,15 @@ func updateUserAlias(userID uint, alias string) (*entity.User, error) {
 		return nil, errors.New("something wrong in database")
 	}
 	return updatedUser, nil
+}
+
+func updatePassword(userID uint, hashedPassword string) error {
+	var user entity.User
+	result := NewRepository().Select("password").Find(&user, "id = ?", userID).Update("password", hashedPassword)
+	if result.RowsAffected != 1 {
+		return result.Error
+	}
+	return nil
 }
 
 func getUser(userID uint) (*entity.User, error) {
