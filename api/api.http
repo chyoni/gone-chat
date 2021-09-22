@@ -1,5 +1,5 @@
 POST http://localhost:4000/user
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjM1NzhmMzAyLTNkZmItNDlkYy04ZDhkLTYyNzRjMzY2YTY3ZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjIwMzkwNiwidXNlcl9pZCI6NH0.aBhT1CDhNmAA8mt6Rn32p4GMq3XpImzFQqS2XnlVbOA
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImU0YTU2YzlhLThkYWQtNDg2Zi1hNjEyLWJkOGU2OGFmN2NkZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjMwMzYwMSwidXNlcl9pZCI6NH0.IMQjBUUUiET_w2z3gR2_2DrcrjcBwP0KNW-sOopsRvc
 
 {
     "username": "test2",
@@ -8,10 +8,18 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6I
 
 ###
 POST http://localhost:4000/room
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjM1NzhmMzAyLTNkZmItNDlkYy04ZDhkLTYyNzRjMzY2YTY3ZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjIwMzkwNiwidXNlcl9pZCI6NH0.aBhT1CDhNmAA8mt6Rn32p4GMq3XpImzFQqS2XnlVbOA
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImU0YTU2YzlhLThkYWQtNDg2Zi1hNjEyLWJkOGU2OGFmN2NkZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjMwMzYwMSwidXNlcl9pZCI6NH0.IMQjBUUUiET_w2z3gR2_2DrcrjcBwP0KNW-sOopsRvc
 
 {
     "participants": [4]
+}
+
+###
+POST http://localhost:4000/user/alias/4
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImU0YTU2YzlhLThkYWQtNDg2Zi1hNjEyLWJkOGU2OGFmN2NkZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjMwMzYwMSwidXNlcl9pZCI6NH0.IMQjBUUUiET_w2z3gR2_2DrcrjcBwP0KNW-sOopsRvc
+
+{
+    "alias": "choynee"
 }
 
 ### 
@@ -24,4 +32,4 @@ POST http://localhost:4000/login
 
 ###
 http://localhost:4000/logout
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjM1NzhmMzAyLTNkZmItNDlkYy04ZDhkLTYyNzRjMzY2YTY3ZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjIwMzkwNiwidXNlcl9pZCI6NH0.aBhT1CDhNmAA8mt6Rn32p4GMq3XpImzFQqS2XnlVbOA
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImU0YTU2YzlhLThkYWQtNDg2Zi1hNjEyLWJkOGU2OGFmN2NkZCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYzMjMwMzYwMSwidXNlcl9pZCI6NH0.IMQjBUUUiET_w2z3gR2_2DrcrjcBwP0KNW-sOopsRvc

@@ -11,7 +11,9 @@ import (
 func message(rw http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get("currentUser")
 	requestMessagePayload := &requestMessagePayload{}
-	err := json.NewDecoder(r.Body).Decode(requestMessagePayload)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestMessagePayload)
 	if err != nil {
 		badRequestResponse(rw, err)
 		return
@@ -22,7 +24,9 @@ func message(rw http.ResponseWriter, r *http.Request) {
 
 func createRoom(rw http.ResponseWriter, r *http.Request) {
 	requestCreateRoomPayload := &requestCreateRoomPayload{}
-	err := json.NewDecoder(r.Body).Decode(requestCreateRoomPayload)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestCreateRoomPayload)
 	if err != nil {
 		badRequestResponse(rw, err)
 		return

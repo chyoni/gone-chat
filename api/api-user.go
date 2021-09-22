@@ -2,15 +2,20 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/chiwon99881/gone-chat/auth"
 	"github.com/chiwon99881/gone-chat/utils"
+	"github.com/gorilla/mux"
 )
 
 func createUser(rw http.ResponseWriter, r *http.Request) {
 	requestCreateUserPayload := &requestCreateUserPayload{}
-	err := json.NewDecoder(r.Body).Decode(requestCreateUserPayload)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestCreateUserPayload)
 	if err != nil {
 		badRequestResponse(rw, err)
 		return
@@ -19,9 +24,46 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password, requestCreateUserPayload.Alias)
 }
 
+func updateUserAlias(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, ok := params["userID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing user_id in params"))
+		return
+	}
+	requestUpdateUserAliasPayload := &requestUpdateUserAliasPayload{}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestUpdateUserAliasPayload)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	currentUser := r.Header.Get("currentUser")
+	if userID != currentUser {
+		unauthorizedResponse(rw)
+		return
+	}
+	userIDAsUint, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		utils.HandleError(err)
+	}
+	updatedUser, err := dbOperator.UpdateUserAlias(uint(userIDAsUint), requestUpdateUserAliasPayload.Alias)
+	if err != nil {
+		json.NewEncoder(rw).Encode(responseCommonPayload{Message: err.Error()})
+		return
+	}
+	json.NewEncoder(rw).Encode(responseUpdateUserAliasPayload{
+		ID:       updatedUser.ID,
+		Username: updatedUser.Username,
+		Alias:    updatedUser.Alias})
+}
+
 func login(rw http.ResponseWriter, r *http.Request) {
 	requestLoginPayload := &requestLoginPayload{}
-	err := json.NewDecoder(r.Body).Decode(requestLoginPayload)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(requestLoginPayload)
 	if err != nil {
 		badRequestResponse(rw, err)
 		return

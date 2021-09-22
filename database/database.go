@@ -18,6 +18,7 @@ type Repository interface {
 	FindUserByUsername(username string) (*entity.User, error)
 	GetUser(userID uint) (*entity.User, error)
 	CreateRoom(participant uint) (*entity.Room, error)
+	UpdateUserAlias(userID uint, alias string) (*entity.User, error)
 }
 
 type RepoOperator struct{}
@@ -36,6 +37,9 @@ func (RepoOperator) FindUserByUsername(username string) (*entity.User, error) {
 }
 func (RepoOperator) GetUser(userID uint) (*entity.User, error) {
 	return getUser(userID)
+}
+func (RepoOperator) UpdateUserAlias(userID uint, alias string) (*entity.User, error) {
+	return updateUserAlias(userID, alias)
 }
 
 func NewRepository() *gorm.DB {
@@ -71,6 +75,18 @@ func findUserByUsername(username string) (*entity.User, error) {
 		return nil, errors.New("can't find user with this username")
 	}
 	return &user, nil
+}
+
+func updateUserAlias(userID uint, alias string) (*entity.User, error) {
+	result := NewRepository().Model(&entity.User{}).Where("id = ?", userID).Update("alias", alias)
+	if result.RowsAffected != 1 {
+		return nil, errors.New("can't find user with this id")
+	}
+	updatedUser, err := findUserByID(userID)
+	if err != nil {
+		return nil, errors.New("something wrong in database")
+	}
+	return updatedUser, nil
 }
 
 func getUser(userID uint) (*entity.User, error) {

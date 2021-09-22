@@ -44,3 +44,5 @@
   > 'get [key 이름]'를 입력하면 '[key 이름]'이라는 key의 value를 출력
 
 - #13 Backend Temporary end
+
+- #14 Update User Alias
