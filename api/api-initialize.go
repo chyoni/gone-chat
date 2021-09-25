@@ -66,6 +66,7 @@ func Start() {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{os.Getenv("CORS_ALLOWED")},
+		AllowedHeaders: []string{"Authorization"},
 	})
 
 	handler := c.Handler(router)
