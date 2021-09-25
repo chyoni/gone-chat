@@ -41,7 +41,7 @@ func ContentTypeMiddleware(next http.Handler) http.Handler {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/login" {
+		if r.URL.Path != "/login" && r.URL.Path != "/user" {
 			tokenAuth, err := auth.ExtractTokenMetadata(r)
 			if err != nil {
 				unauthorizedResponse(w)
@@ -73,6 +73,7 @@ func Start() {
 	router.HandleFunc("/ws/{roomID:[0-9]+}", chat.UpgradeWithRoom).Methods("GET")
 	router.HandleFunc("/message", message).Methods("POST")
 	router.HandleFunc("/user", createUser).Methods("POST")
+	router.HandleFunc("/user/info/me", getMe).Methods("GET")
 	router.HandleFunc("/user/{userID:[0-9]+}", deleteUser).Methods("DELETE")
 	router.HandleFunc("/user/alias/{userID:[0-9]+}", updateUserAlias).Methods("POST")
 	router.HandleFunc("/user/password/{userID:[0-9]+}", updateUserPassword).Methods("POST")

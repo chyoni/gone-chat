@@ -6,9 +6,10 @@ type requestMessagePayload struct {
 }
 
 type requestCreateUserPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Alias    string `json:"alias"`
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
+	Alias           string `json:"alias"`
 }
 
 type requestUpdateUserAliasPayload struct {
@@ -39,9 +40,19 @@ type responseLoginPayload struct {
 	ID        uint              `json:"id"`
 	Username  string            `json:"username"`
 	Alias     string            `json:"alias"`
+	Avatar    string            `json:"avatar"`
 	CreatedAt int               `json:"created_at"`
 	UpdatedAt int               `json:"updated_at"`
 	Tokens    map[string]string `json:"token"`
+}
+
+type responseGetMePayload struct {
+	ID        uint   `json:"id"`
+	Username  string `json:"username"`
+	Alias     string `json:"alias"`
+	Avatar    string `json:"avatar"`
+	CreatedAt int    `json:"created_at"`
+	UpdatedAt int    `json:"updated_at"`
 }
 
 type responseCommonPayload struct {

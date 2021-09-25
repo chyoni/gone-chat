@@ -5,6 +5,7 @@ type User struct {
 	Username  string `gorm:"unique;not null"`
 	Password  string `gorm:"not null"`
 	Alias     string
+	Avatar    string
 	CreatedAt int
 	UpdatedAt int
 	Rooms     []*Room `gorm:"many2many:user_rooms"`

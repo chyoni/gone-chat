@@ -19,8 +19,31 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 		badRequestResponse(rw, err)
 		return
 	}
+	if requestCreateUserPayload.Password != requestCreateUserPayload.ConfirmPassword {
+		badRequestResponse(rw, errors.New("password is not matched"))
+		return
+	}
 	rw.WriteHeader(http.StatusCreated)
 	dbOperator.CreateUser(requestCreateUserPayload.Username, requestCreateUserPayload.Password, requestCreateUserPayload.Alias)
+}
+
+func getMe(rw http.ResponseWriter, r *http.Request) {
+	currentUser := r.Header.Get("currentUser")
+	userIDAsUint := utils.ToUintFromString(currentUser)
+	me, err := dbOperator.GetUser(userIDAsUint)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseGetMePayload{
+		ID:        me.ID,
+		Username:  me.Username,
+		Alias:     me.Alias,
+		Avatar:    me.Avatar,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+	})
 }
 
 func deleteUser(rw http.ResponseWriter, r *http.Request) {
@@ -160,6 +183,7 @@ func login(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(responseLoginPayload{
 		ID:        me.ID,
 		Username:  me.Username,
+		Avatar:    me.Avatar,
 		Alias:     me.Alias,
 		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,

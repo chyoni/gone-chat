@@ -73,7 +73,7 @@ func createUser(username, password, alias string) {
 
 func findUserByID(userID uint) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("id", "username", "alias").Find(&user, "id =?", userID)
+	result := NewRepository().Select("id", "username", "alias", "avatar").Find(&user, "id =?", userID)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this id")
 	}
@@ -124,7 +124,7 @@ func updatePassword(userID uint, hashedPassword string) error {
 
 func getUser(userID uint) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("id", "username", "alias", "created_at", "updated_at").Find(&user, "id = ?", userID)
+	result := NewRepository().Select("id", "username", "alias", "avatar", "created_at", "updated_at").Find(&user, "id = ?", userID)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this id")
 	}
