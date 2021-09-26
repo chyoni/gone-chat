@@ -6,7 +6,12 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 func HandleError(err error) {
@@ -41,4 +46,24 @@ func ToUintFromString(aString string) uint {
 		HandleError(err)
 	}
 	return uint(aStringAsUint)
+}
+
+func ConnectAws() *session.Session {
+	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	myRegion := os.Getenv("AWS_REGION")
+
+	sess, err := session.NewSession(
+		&aws.Config{
+			Region: aws.String(myRegion),
+			Credentials: credentials.NewStaticCredentials(
+				accessKeyID,
+				secretAccessKey,
+				"",
+			),
+		})
+	if err != nil {
+		HandleError(err)
+	}
+	return sess
 }

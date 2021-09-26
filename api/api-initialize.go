@@ -86,5 +86,6 @@ func Start() {
 	router.HandleFunc("/room", createRoom).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/logout", logout).Methods("GET")
+	router.HandleFunc("/image/upload", uploadImage).Methods("POST")
 	utils.HandleError(http.ListenAndServe(":4000", handler))
 }

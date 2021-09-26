@@ -63,3 +63,9 @@ type responseError struct {
 	ErrMessage       string `json:"error_message"`
 	TokenRefreshFlag bool   `json:"token_refresh_flag,omitempty"`
 }
+
+type responseUploadImage struct {
+	ErrMessage string      `json:"error_message,omitempty"`
+	FilePath   string      `json:"filepath,omitempty"`
+	Uploader   interface{} `json:"uploader,omitempty"`
+}

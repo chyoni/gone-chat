@@ -61,3 +61,7 @@
   > 그렇기 때문에 허용한 Origin에서 추가하는 Headers정보 중 허용하는 Key를 설정해줘야 한다.
 
 - #19 Token Invalid Response
+
+- #20 Upload Image to AWS S3
+
+  - go get -u github.com/aws/aws-sdk-go/...

@@ -3,8 +3,12 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/chiwon99881/gone-chat/auth"
 	"github.com/chiwon99881/gone-chat/utils"
 	"github.com/gorilla/mux"
@@ -204,4 +208,36 @@ func logout(rw http.ResponseWriter, r *http.Request) {
 	}
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(responseCommonPayload{Message: "Successfully logged out"})
+}
+
+func uploadImage(rw http.ResponseWriter, r *http.Request) {
+	sess := utils.ConnectAws()
+	uploader := s3manager.NewUploader(sess)
+
+	awsBucket := os.Getenv("AWS_BUCKET_NAME")
+	file, header, err := r.FormFile("photo")
+	if err != nil {
+		utils.HandleError(err)
+	}
+	filename := header.Filename
+
+	up, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(awsBucket),
+		ACL:    aws.String("public-read"),
+		Key:    aws.String(filename),
+		Body:   file,
+	})
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(rw).Encode(responseUploadImage{
+			ErrMessage: "failed to upload file",
+			Uploader:   up,
+		})
+		return
+	}
+	filepath := fmt.Sprintf("https://%s.s3-%s.amazonaws.com/%s", awsBucket, os.Getenv("AWS_REGION"), filename)
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseUploadImage{
+		FilePath: filepath,
+	})
 }
