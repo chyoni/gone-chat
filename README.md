@@ -59,3 +59,5 @@
 
   > Origin이 같지 않을 때, 허용한 Origin에서 추가하는 Headers를 허용하지 않으면 이 또한 CORS Error가 발생
   > 그렇기 때문에 허용한 Origin에서 추가하는 Headers정보 중 허용하는 Key를 설정해줘야 한다.
+
+- #19 Token Invalid Response

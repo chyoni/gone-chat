@@ -28,7 +28,6 @@ func createUser(rw http.ResponseWriter, r *http.Request) {
 }
 
 func getMe(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
 	currentUser := r.Header.Get("currentUser")
 	userIDAsUint := utils.ToUintFromString(currentUser)
 	me, err := dbOperator.GetUser(userIDAsUint)

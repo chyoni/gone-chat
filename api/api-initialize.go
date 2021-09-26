@@ -17,6 +17,11 @@ import (
 
 var dbOperator database.Repository = database.RepoOperator{}
 
+func tokenInvalidResponse(rw http.ResponseWriter) {
+	rw.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(rw).Encode(responseError{ErrMessage: "token invalid", TokenRefreshFlag: true})
+}
+
 func badRequestResponse(rw http.ResponseWriter, err error) {
 	rw.WriteHeader(http.StatusBadRequest)
 	json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
@@ -44,12 +49,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if r.URL.Path != "/login" && r.URL.Path != "/user" {
 			tokenAuth, err := auth.ExtractTokenMetadata(r)
 			if err != nil {
-				unauthorizedResponse(w)
+				tokenInvalidResponse(w)
 				return
 			}
 			userID, err := auth.FetchAuth(tokenAuth)
 			if err != nil {
-				unauthorizedResponse(w)
+				tokenInvalidResponse(w)
 				return
 			}
 			r.Header.Add("currentUser", strconv.Itoa(int(userID)))
@@ -65,8 +70,8 @@ func Start() {
 	fmt.Println("Server listening on localhost:4000")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{os.Getenv("CORS_ALLOWED")},
-		AllowedHeaders: []string{"Authorization"},
+		AllowedOrigins: []string{os.Getenv("CORS_ALLOWED_ORIGINS")},
+		AllowedHeaders: []string{os.Getenv("CORS_ALLOWED_HEADERS")},
 	})
 
 	handler := c.Handler(router)

@@ -60,5 +60,6 @@ type responseCommonPayload struct {
 }
 
 type responseError struct {
-	ErrMessage string `json:"error_message"`
+	ErrMessage       string `json:"error_message"`
+	TokenRefreshFlag bool   `json:"token_refresh_flag,omitempty"`
 }
