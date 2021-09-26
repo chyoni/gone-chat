@@ -22,6 +22,7 @@ type Repository interface {
 	UpdatePassword(userID uint, password string) error
 	CheckUserPassword(userID uint, hashedPassword string) bool
 	CreateRoom(participant uint) (*entity.Room, error)
+	UpdateUserAvatar(userID uint, avatarURL string) error
 }
 
 type RepoOperator struct{}
@@ -52,6 +53,9 @@ func (RepoOperator) CheckUserPassword(userID uint, hashedPassword string) bool {
 }
 func (RepoOperator) DeleteUser(userID uint) error {
 	return deleteUser(userID)
+}
+func (RepoOperator) UpdateUserAvatar(userID uint, avatarURL string) error {
+	return updateUserAvatar(userID, avatarURL)
 }
 
 func NewRepository() *gorm.DB {
@@ -116,6 +120,14 @@ func updateUserAlias(userID uint, alias string) (*entity.User, error) {
 func updatePassword(userID uint, hashedPassword string) error {
 	var user entity.User
 	result := NewRepository().Select("password").Find(&user, "id = ?", userID).Update("password", hashedPassword)
+	if result.RowsAffected != 1 {
+		return result.Error
+	}
+	return nil
+}
+
+func updateUserAvatar(userID uint, avatarURL string) error {
+	result := NewRepository().Model(&entity.User{}).Where("id = ?", userID).Update("avatar", avatarURL)
 	if result.RowsAffected != 1 {
 		return result.Error
 	}

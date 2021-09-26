@@ -65,3 +65,5 @@
 - #20 Upload Image to AWS S3
 
   - go get -u github.com/aws/aws-sdk-go/...
+
+- #21 Update Database avatar with uploaded image

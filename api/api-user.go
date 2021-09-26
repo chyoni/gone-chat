@@ -236,6 +236,15 @@ func uploadImage(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filepath := fmt.Sprintf("https://%s.s3-%s.amazonaws.com/%s", awsBucket, os.Getenv("AWS_REGION"), filename)
+
+	currentUser := r.Header.Get("currentUser")
+	userID := utils.ToUintFromString(currentUser)
+	err = dbOperator.UpdateUserAvatar(userID, filepath)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(responseUploadImage{
 		FilePath: filepath,
