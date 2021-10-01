@@ -23,6 +23,7 @@ type Repository interface {
 	CheckUserPassword(userID uint, hashedPassword string) bool
 	CreateRoom(participant uint) (*entity.Room, error)
 	UpdateUserAvatar(userID uint, avatarURL string) error
+	GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error)
 }
 
 type RepoOperator struct{}
@@ -56,6 +57,9 @@ func (RepoOperator) DeleteUser(userID uint) error {
 }
 func (RepoOperator) UpdateUserAvatar(userID uint, avatarURL string) error {
 	return updateUserAvatar(userID, avatarURL)
+}
+func (RepoOperator) GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
+	return getRoomsByUserID(userID)
 }
 
 func NewRepository() *gorm.DB {
@@ -164,4 +168,13 @@ func createRoom(participant uint) (*entity.Room, error) {
 		return nil, result.Error
 	}
 	return &room, nil
+}
+
+func getRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
+	var userRooms []*entity.UserRooms
+	result := NewRepository().Where("user_id = ?", userID).Find(&userRooms)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return userRooms, nil
 }

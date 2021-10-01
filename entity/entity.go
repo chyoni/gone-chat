@@ -17,3 +17,8 @@ type Room struct {
 	UpdatedAt    int
 	Participants []*User `gorm:"many2many:user_rooms"`
 }
+
+type UserRooms struct {
+	UserID uint `json:"user_id"`
+	RoomID uint `json:"room_id"`
+}

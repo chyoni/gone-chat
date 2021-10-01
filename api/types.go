@@ -55,6 +55,17 @@ type responseGetMePayload struct {
 	UpdatedAt int    `json:"updated_at"`
 }
 
+type responseGetRoomPayload struct {
+	RoomID []uint `json:"room_id"`
+}
+
+type responseCreateRoomPayload struct {
+	ID           uint   `json:"room_id"`
+	CreatedAt    int    `json:"created_at"`
+	UpdatedAt    int    `json:"updated_at"`
+	Participants []uint `json:"participants"`
+}
+
 type responseCommonPayload struct {
 	Message string `json:"message"`
 }

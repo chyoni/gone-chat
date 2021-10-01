@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/chiwon99881/gone-chat/chat"
+	"github.com/chiwon99881/gone-chat/utils"
+	"github.com/gorilla/mux"
 )
 
 func message(rw http.ResponseWriter, r *http.Request) {
@@ -41,17 +43,55 @@ func createRoom(rw http.ResponseWriter, r *http.Request) {
 		badRequestResponse(rw, err)
 		return
 	}
-	bearerToken := r.Header.Get("Authorization")
-	upgradeURL := fmt.Sprintf("http://127.0.0.1:4000/ws/%d", room.ID)
+	var participants []uint
+	for _, value := range room.Participants {
+		participants = append(participants, value.ID)
+	}
+	rw.WriteHeader(http.StatusCreated)
+	json.NewEncoder(rw).Encode(responseCreateRoomPayload{
+		ID:           room.ID,
+		CreatedAt:    room.CreatedAt,
+		UpdatedAt:    room.UpdatedAt,
+		Participants: participants,
+	})
+	// bearerToken := r.Header.Get("Authorization")
+	// upgradeURL := fmt.Sprintf("http://127.0.0.1:4000/ws/%d", room.ID)
 
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", upgradeURL, nil)
-	req.Header.Set("Authorization", bearerToken)
-	resp, err := client.Do(req)
+	// client := &http.Client{}
+	// req, _ := http.NewRequest("GET", upgradeURL, nil)
+	// req.Header.Set("Authorization", bearerToken)
+	// resp, err := client.Do(req)
 
-	if err != nil || resp.StatusCode != 200 {
-		rw.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(rw).Encode(responseError{ErrMessage: "upgrade fail cause: should pass token"})
+	// if err != nil || resp.StatusCode != 200 {
+	// 	rw.WriteHeader(http.StatusUnauthorized)
+	// 	json.NewEncoder(rw).Encode(responseError{ErrMessage: err.Error()})
+	// 	return
+	// }
+}
+
+func getRooms(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, ok := params["userID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing user id in parameter"))
 		return
 	}
+	currentUser := r.Header.Get("currentUser")
+	if userID != currentUser {
+		unauthorizedResponse(rw)
+		return
+	}
+	userIDByUint := utils.ToUintFromString(userID)
+	userRooms, err := dbOperator.GetRoomsByUserID(userIDByUint)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	var myRooms []uint
+	for _, values := range userRooms {
+		myRooms = append(myRooms, values.RoomID)
+	}
+	responseGetRoomPayload := &responseGetRoomPayload{RoomID: myRooms}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseGetRoomPayload)
 }

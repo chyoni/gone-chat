@@ -83,6 +83,7 @@ func Start() {
 	router.HandleFunc("/user/{userID:[0-9]+}", deleteUser).Methods("DELETE")
 	router.HandleFunc("/user/alias/{userID:[0-9]+}", updateUserAlias).Methods("POST")
 	router.HandleFunc("/user/password/{userID:[0-9]+}", updateUserPassword).Methods("POST")
+	router.HandleFunc("/user/room/{userID:[0-9]+}", getRooms).Methods("GET")
 	router.HandleFunc("/room", createRoom).Methods("POST")
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/logout", logout).Methods("GET")

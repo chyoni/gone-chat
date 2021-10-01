@@ -67,3 +67,5 @@
   - go get -u github.com/aws/aws-sdk-go/...
 
 - #21 Update Database avatar with uploaded image
+
+- #22 Get Rooms
