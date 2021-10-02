@@ -95,3 +95,23 @@ func getRooms(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(responseGetRoomPayload)
 }
+
+func getsUsersByRoom(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	roomID, ok := params["roomID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing room_id in parameter"))
+		return
+	}
+	roomIDByUint := utils.ToUintFromString(roomID)
+	usersForRoom, err := dbOperator.GetUsersByRoomID(roomIDByUint)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(responseGetUsersByRoom{
+		RoomID: usersForRoom.RoomID,
+		Users:  usersForRoom.Users,
+	})
+}

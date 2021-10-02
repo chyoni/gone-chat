@@ -69,3 +69,5 @@
 - #21 Update Database avatar with uploaded image
 
 - #22 Get Rooms
+
+- #23 Get Users By Room

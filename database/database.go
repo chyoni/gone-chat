@@ -24,6 +24,7 @@ type Repository interface {
 	CreateRoom(participant uint) (*entity.Room, error)
 	UpdateUserAvatar(userID uint, avatarURL string) error
 	GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error)
+	GetUsersByRoomID(roomID uint) (*usersForRoom, error)
 }
 
 type RepoOperator struct{}
@@ -60,6 +61,14 @@ func (RepoOperator) UpdateUserAvatar(userID uint, avatarURL string) error {
 }
 func (RepoOperator) GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 	return getRoomsByUserID(userID)
+}
+func (RepoOperator) GetUsersByRoomID(roomID uint) (*usersForRoom, error) {
+	return getUsersByRoomID(roomID)
+}
+
+type usersForRoom struct {
+	RoomID uint
+	Users  []*entity.User
 }
 
 func NewRepository() *gorm.DB {
@@ -177,4 +186,26 @@ func getRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 		return nil, result.Error
 	}
 	return userRooms, nil
+}
+
+func getUsersByRoomID(roomID uint) (*usersForRoom, error) {
+
+	var userRooms []*entity.UserRooms
+	var users []*entity.User
+	result := NewRepository().Where("room_id = ?", roomID).Find(&userRooms)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	for _, values := range userRooms {
+		user, err := findUserByID(values.UserID)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	ufr := &usersForRoom{
+		RoomID: roomID,
+		Users:  users,
+	}
+	return ufr, nil
 }

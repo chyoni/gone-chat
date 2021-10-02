@@ -1,5 +1,7 @@
 package api
 
+import "github.com/chiwon99881/gone-chat/entity"
+
 type requestMessagePayload struct {
 	Message string `json:"message"`
 	RoomID  string `json:"roomId"`
@@ -79,4 +81,9 @@ type responseUploadImage struct {
 	ErrMessage string      `json:"error_message,omitempty"`
 	FilePath   string      `json:"filepath,omitempty"`
 	Uploader   interface{} `json:"uploader,omitempty"`
+}
+
+type responseGetUsersByRoom struct {
+	RoomID uint           `json:"room_id"`
+	Users  []*entity.User `json:"users"`
 }
