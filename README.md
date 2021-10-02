@@ -71,3 +71,5 @@
 - #22 Get Rooms
 
 - #23 Get Users By Room
+
+- #24 sync.Once for database

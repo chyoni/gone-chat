@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/chiwon99881/gone-chat/entity"
 	"github.com/chiwon99881/gone-chat/utils"
@@ -71,26 +72,41 @@ type usersForRoom struct {
 	Users  []*entity.User
 }
 
+var db *gorm.DB
+var once sync.Once
+
 func NewRepository() *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Seoul",
 		os.Getenv("HOSTNAME"), os.Getenv("USERNAME"), os.Getenv("PASSWORD"), os.Getenv("DBNAME"), os.Getenv("DBPORT"))
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default})
+	once.Do(func() {
+		if db == nil {
+			gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Default})
+			db = gormDB
+			if err != nil {
+				utils.HandleError(err)
+			}
+			db.AutoMigrate(&entity.User{}, &entity.Room{})
+		}
+	})
+	return db
+}
+
+func Close() {
+	sqlDB, err := db.DB()
 	if err != nil {
 		utils.HandleError(err)
 	}
-
-	db.AutoMigrate(&entity.User{}, &entity.Room{})
-	return db
+	sqlDB.Close()
 }
 
 func createUser(username, password, alias string) {
 	user := entity.User{Username: username, Password: password, Alias: alias}
-	NewRepository().Create(&user)
+	db.Create(&user)
 }
 
 func findUserByID(userID uint) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("id", "username", "alias", "avatar").Find(&user, "id =?", userID)
+	result := db.Select("id", "username", "alias", "avatar").Find(&user, "id =?", userID)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this id")
 	}
@@ -99,7 +115,7 @@ func findUserByID(userID uint) (*entity.User, error) {
 
 func findUserByUsername(username string) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("id", "username", "password").Find(&user, "username = ?", username)
+	result := db.Select("id", "username", "password").Find(&user, "username = ?", username)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this username")
 	}
@@ -108,7 +124,7 @@ func findUserByUsername(username string) (*entity.User, error) {
 
 func checkUserPassword(userID uint, hashedPassword string) bool {
 	var user entity.User
-	result := NewRepository().Select("password").Find(&user, "id = ?", userID)
+	result := db.Select("password").Find(&user, "id = ?", userID)
 	if result.RowsAffected != 1 {
 		return false
 	}
@@ -119,7 +135,7 @@ func checkUserPassword(userID uint, hashedPassword string) bool {
 }
 
 func updateUserAlias(userID uint, alias string) (*entity.User, error) {
-	result := NewRepository().Model(&entity.User{}).Where("id = ?", userID).Update("alias", alias)
+	result := db.Model(&entity.User{}).Where("id = ?", userID).Update("alias", alias)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this id")
 	}
@@ -132,7 +148,7 @@ func updateUserAlias(userID uint, alias string) (*entity.User, error) {
 
 func updatePassword(userID uint, hashedPassword string) error {
 	var user entity.User
-	result := NewRepository().Select("password").Find(&user, "id = ?", userID).Update("password", hashedPassword)
+	result := db.Select("password").Find(&user, "id = ?", userID).Update("password", hashedPassword)
 	if result.RowsAffected != 1 {
 		return result.Error
 	}
@@ -140,7 +156,7 @@ func updatePassword(userID uint, hashedPassword string) error {
 }
 
 func updateUserAvatar(userID uint, avatarURL string) error {
-	result := NewRepository().Model(&entity.User{}).Where("id = ?", userID).Update("avatar", avatarURL)
+	result := db.Model(&entity.User{}).Where("id = ?", userID).Update("avatar", avatarURL)
 	if result.RowsAffected != 1 {
 		return result.Error
 	}
@@ -149,7 +165,7 @@ func updateUserAvatar(userID uint, avatarURL string) error {
 
 func getUser(userID uint) (*entity.User, error) {
 	var user entity.User
-	result := NewRepository().Select("id", "username", "alias", "avatar", "created_at", "updated_at").Find(&user, "id = ?", userID)
+	result := db.Select("id", "username", "alias", "avatar", "created_at", "updated_at").Find(&user, "id = ?", userID)
 	if result.RowsAffected != 1 {
 		return nil, errors.New("can't find user with this id")
 	}
@@ -157,7 +173,7 @@ func getUser(userID uint) (*entity.User, error) {
 }
 
 func deleteUser(userID uint) error {
-	result := NewRepository().Delete(&entity.User{}, userID)
+	result := db.Delete(&entity.User{}, userID)
 	if result.RowsAffected != 1 {
 		return result.Error
 	}
@@ -172,7 +188,7 @@ func createRoom(participant uint) (*entity.Room, error) {
 	}
 	users = append(users, user)
 	room := entity.Room{Participants: users}
-	result := NewRepository().Create(&room)
+	result := db.Create(&room)
 	if result.RowsAffected != 1 {
 		return nil, result.Error
 	}
@@ -181,7 +197,7 @@ func createRoom(participant uint) (*entity.Room, error) {
 
 func getRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 	var userRooms []*entity.UserRooms
-	result := NewRepository().Where("user_id = ?", userID).Find(&userRooms)
+	result := db.Where("user_id = ?", userID).Find(&userRooms)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -189,10 +205,9 @@ func getRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 }
 
 func getUsersByRoomID(roomID uint) (*usersForRoom, error) {
-
 	var userRooms []*entity.UserRooms
 	var users []*entity.User
-	result := NewRepository().Where("room_id = ?", roomID).Find(&userRooms)
+	result := db.Where("room_id = ?", roomID).Find(&userRooms)
 	if result.Error != nil {
 		return nil, result.Error
 	}

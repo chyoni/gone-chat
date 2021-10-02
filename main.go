@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	defer database.Close()
 	env.Start()
 	database.NewRepository()
 	auth.Start()
