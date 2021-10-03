@@ -73,3 +73,5 @@
 - #23 Get Users By Room
 
 - #24 sync.Once for database
+
+- #25 Websocket Server divided

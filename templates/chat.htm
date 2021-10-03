@@ -13,7 +13,7 @@
       <button>Send</button>
     </form>
     <script>
-      const roomId = 1;
+      const roomId = 7;
       const ws = new WebSocket(`ws://localhost:4000/ws/${roomId}`);
       ws.onmessage = function (event) {
         console.log(JSON.parse(event.data));

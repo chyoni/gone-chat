@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/chiwon99881/gone-chat/auth"
-	"github.com/chiwon99881/gone-chat/chat"
 	"github.com/chiwon99881/gone-chat/database"
 	"github.com/chiwon99881/gone-chat/utils"
 	"github.com/gorilla/mux"
@@ -67,16 +66,16 @@ func Start() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(ContentTypeMiddleware)
 	router.Use(AuthMiddleware)
-	fmt.Println("Server listening on localhost:4000")
+	fmt.Println("Http server listening on localhost:4000")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{os.Getenv("CORS_ALLOWED_ORIGINS")},
 		AllowedHeaders: []string{os.Getenv("CORS_ALLOWED_HEADERS")},
+		AllowedMethods: []string{"GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"},
 	})
 
 	handler := c.Handler(router)
 
-	router.HandleFunc("/ws/{roomID:[0-9]+}", chat.UpgradeWithRoom).Methods("GET")
 	router.HandleFunc("/message", message).Methods("POST")
 	router.HandleFunc("/user", createUser).Methods("POST")
 	router.HandleFunc("/user/info/me", getMe).Methods("GET")

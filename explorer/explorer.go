@@ -20,7 +20,7 @@ func Start() {
 	router := mux.NewRouter()
 	router.HandleFunc("/room", room).Methods("GET")
 
-	fmt.Println("Explorer listening on localhost:3000")
-	err := http.ListenAndServe(":3000", router)
+	fmt.Println("Explorer listening on localhost:5000")
+	err := http.ListenAndServe(":5000", router)
 	utils.HandleError(err)
 }

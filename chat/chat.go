@@ -13,7 +13,7 @@ var upgrader = websocket.Upgrader{}
 func UpgradeWithRoom(rw http.ResponseWriter, r *http.Request) {
 	ids := mux.Vars(r)
 	roomID, ok := ids["roomID"]
-	userID := r.Header.Get("currentUser")
+	userID := r.URL.Query().Get("auth")
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		if ok && userID != "" {
 			return true
