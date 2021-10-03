@@ -77,3 +77,5 @@
 - #25 Websocket Server divided
 
 - #26 Create Chat Entity and Create Chat Record
+
+- #27 Get All Messages By Room

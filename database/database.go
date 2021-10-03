@@ -27,6 +27,7 @@ type Repository interface {
 	GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error)
 	GetUsersByRoomID(roomID uint) (*usersForRoom, error)
 	CreateChatRecord(roomID, userID uint, message string) error
+	GetAllChatByRoom(roomID uint) ([]*entity.Chat, error)
 }
 
 type RepoOperator struct{}
@@ -69,6 +70,9 @@ func (RepoOperator) GetUsersByRoomID(roomID uint) (*usersForRoom, error) {
 }
 func (RepoOperator) CreateChatRecord(roomID, userID uint, message string) error {
 	return createChatRecord(roomID, userID, message)
+}
+func (RepoOperator) GetAllChatByRoom(roomID uint) ([]*entity.Chat, error) {
+	return getAllChatByRoom(roomID)
 }
 
 type usersForRoom struct {
@@ -236,4 +240,13 @@ func createChatRecord(roomID, userID uint, message string) error {
 		return result.Error
 	}
 	return nil
+}
+
+func getAllChatByRoom(roomID uint) ([]*entity.Chat, error) {
+	var chats []*entity.Chat
+	result := db.Where("room_id = ?", roomID).Order("created_at asc").Find(&chats)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return chats, nil
 }

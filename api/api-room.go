@@ -96,9 +96,8 @@ func getRooms(rw http.ResponseWriter, r *http.Request) {
 	for _, values := range userRooms {
 		myRooms = append(myRooms, values.RoomID)
 	}
-	responseGetRoomPayload := &responseGetRoomPayload{RoomID: myRooms}
 	rw.WriteHeader(http.StatusOK)
-	json.NewEncoder(rw).Encode(responseGetRoomPayload)
+	json.NewEncoder(rw).Encode(responseGetRoomPayload{RoomID: myRooms})
 }
 
 func getsUsersByRoom(rw http.ResponseWriter, r *http.Request) {
@@ -119,4 +118,42 @@ func getsUsersByRoom(rw http.ResponseWriter, r *http.Request) {
 		RoomID: usersForRoom.RoomID,
 		Users:  usersForRoom.Users,
 	})
+}
+
+func getAllMessagesByRoom(rw http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	roomID, ok := params["roomID"]
+	if !ok {
+		badRequestResponse(rw, errors.New("missing room_id in parameter"))
+		return
+	}
+	currentUser := r.Header.Get("currentUser")
+	users, err := dbOperator.GetUsersByRoomID(utils.ToUintFromString(roomID))
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	checkValid := false
+	for _, user := range users.Users {
+		if user.ID == utils.ToUintFromString(currentUser) {
+			checkValid = true
+			break
+		}
+	}
+	if !checkValid {
+		unauthorizedResponse(rw)
+		return
+	}
+	chats, err := dbOperator.GetAllChatByRoom(utils.ToUintFromString(roomID))
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	var cleanChats []cleanChat
+
+	for _, value := range chats {
+		cleanChats = append(cleanChats, cleanChat{RoomID: value.RoomID, FromID: value.UserID, Message: value.Message, Created: value.CreatedAt})
+	}
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(cleanChats)
 }

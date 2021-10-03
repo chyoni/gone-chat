@@ -85,6 +85,7 @@ func Start() {
 	router.HandleFunc("/user/room/{userID:[0-9]+}", getRooms).Methods("GET")
 	router.HandleFunc("/room", createRoom).Methods("POST")
 	router.HandleFunc("/room/{roomID:[0-9]+}/users", getsUsersByRoom).Methods("GET")
+	router.HandleFunc("/room/{roomID:[0-9]+}/messages", getAllMessagesByRoom).Methods("GET")
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/logout", logout).Methods("GET")
 	router.HandleFunc("/image/upload", uploadImage).Methods("POST")
