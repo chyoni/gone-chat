@@ -75,3 +75,5 @@
 - #24 sync.Once for database
 
 - #25 Websocket Server divided
+
+- #26 Create Chat Entity and Create Chat Record

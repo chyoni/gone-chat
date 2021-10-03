@@ -21,6 +21,11 @@ func message(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
+	dbOperator.CreateChatRecord(
+		utils.ToUintFromString(requestMessagePayload.RoomID),
+		utils.ToUintFromString(userID),
+		requestMessagePayload.Message,
+	)
 	chat.HandleMessage(requestMessagePayload.Message, requestMessagePayload.RoomID, userID)
 }
 

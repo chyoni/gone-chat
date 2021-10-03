@@ -9,6 +9,7 @@ type User struct {
 	CreatedAt int     `json:"created_at,omitempty"`
 	UpdatedAt int     `json:"updated_at,omitempty"`
 	Rooms     []*Room `json:"rooms,omitempty" gorm:"many2many:user_rooms"`
+	Messages  []*Chat `json:"-" gorm:"foreignKey:UserID"`
 }
 
 type Room struct {
@@ -16,9 +17,18 @@ type Room struct {
 	CreatedAt    int     `json:"created_at,omitempty"`
 	UpdatedAt    int     `json:"updated_at,omitempty"`
 	Participants []*User `gorm:"many2many:user_rooms"`
+	Messages     []*Chat `json:"-" gorm:"foreignKey:RoomID"`
 }
 
 type UserRooms struct {
 	UserID uint `json:"user_id"`
 	RoomID uint `json:"room_id"`
+}
+
+type Chat struct {
+	ID        uint   `gorm:"primaryKey"`
+	RoomID    uint   `json:"room_id"`
+	UserID    uint   `json:"user_id"`
+	Message   string `json:"message"`
+	CreatedAt int    `json:"created_at"`
 }

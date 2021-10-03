@@ -26,6 +26,7 @@ type Repository interface {
 	UpdateUserAvatar(userID uint, avatarURL string) error
 	GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error)
 	GetUsersByRoomID(roomID uint) (*usersForRoom, error)
+	CreateChatRecord(roomID, userID uint, message string) error
 }
 
 type RepoOperator struct{}
@@ -66,6 +67,9 @@ func (RepoOperator) GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 func (RepoOperator) GetUsersByRoomID(roomID uint) (*usersForRoom, error) {
 	return getUsersByRoomID(roomID)
 }
+func (RepoOperator) CreateChatRecord(roomID, userID uint, message string) error {
+	return createChatRecord(roomID, userID, message)
+}
 
 type usersForRoom struct {
 	RoomID uint
@@ -85,7 +89,7 @@ func NewRepository() *gorm.DB {
 			if err != nil {
 				utils.HandleError(err)
 			}
-			db.AutoMigrate(&entity.User{}, &entity.Room{})
+			db.AutoMigrate(&entity.User{}, &entity.Room{}, &entity.Chat{})
 		}
 	})
 	return db
@@ -223,4 +227,13 @@ func getUsersByRoomID(roomID uint) (*usersForRoom, error) {
 		Users:  users,
 	}
 	return ufr, nil
+}
+
+func createChatRecord(roomID, userID uint, message string) error {
+	chat := entity.Chat{RoomID: roomID, UserID: userID, Message: message}
+	result := db.Create(&chat)
+	if result.RowsAffected != 1 || result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
