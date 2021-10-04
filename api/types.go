@@ -89,8 +89,8 @@ type responseGetUsersByRoom struct {
 }
 
 type cleanChat struct {
-	RoomID  uint   `json:"roomId"`
-	FromID  uint   `json:"fromId"`
-	Message string `json:"message"`
-	Created int    `json:"created"`
+	RoomID  uint         `json:"roomId"`
+	From    *entity.User `json:"from"`
+	Message string       `json:"message"`
+	Created int          `json:"created"`
 }

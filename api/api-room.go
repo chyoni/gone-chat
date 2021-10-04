@@ -21,12 +21,21 @@ func message(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rw.WriteHeader(http.StatusOK)
-	dbOperator.CreateChatRecord(
+	newChat, err := dbOperator.CreateChatRecord(
 		utils.ToUintFromString(requestMessagePayload.RoomID),
 		utils.ToUintFromString(userID),
 		requestMessagePayload.Message,
 	)
-	chat.HandleMessage(requestMessagePayload.Message, requestMessagePayload.RoomID, userID)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	from, err := dbOperator.GetUser(newChat.UserID)
+	if err != nil {
+		badRequestResponse(rw, err)
+		return
+	}
+	chat.HandleMessage(requestMessagePayload.Message, requestMessagePayload.RoomID, from, newChat.CreatedAt)
 }
 
 func createRoom(rw http.ResponseWriter, r *http.Request) {
@@ -152,7 +161,12 @@ func getAllMessagesByRoom(rw http.ResponseWriter, r *http.Request) {
 	var cleanChats []cleanChat
 
 	for _, value := range chats {
-		cleanChats = append(cleanChats, cleanChat{RoomID: value.RoomID, FromID: value.UserID, Message: value.Message, Created: value.CreatedAt})
+		who, err := dbOperator.GetUser(value.UserID)
+		if err != nil {
+			badRequestResponse(rw, err)
+			return
+		}
+		cleanChats = append(cleanChats, cleanChat{RoomID: value.RoomID, From: who, Message: value.Message, Created: value.CreatedAt})
 	}
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(cleanChats)

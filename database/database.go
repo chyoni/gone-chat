@@ -26,7 +26,7 @@ type Repository interface {
 	UpdateUserAvatar(userID uint, avatarURL string) error
 	GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error)
 	GetUsersByRoomID(roomID uint) (*usersForRoom, error)
-	CreateChatRecord(roomID, userID uint, message string) error
+	CreateChatRecord(roomID, userID uint, message string) (*entity.Chat, error)
 	GetAllChatByRoom(roomID uint) ([]*entity.Chat, error)
 }
 
@@ -68,7 +68,7 @@ func (RepoOperator) GetRoomsByUserID(userID uint) ([]*entity.UserRooms, error) {
 func (RepoOperator) GetUsersByRoomID(roomID uint) (*usersForRoom, error) {
 	return getUsersByRoomID(roomID)
 }
-func (RepoOperator) CreateChatRecord(roomID, userID uint, message string) error {
+func (RepoOperator) CreateChatRecord(roomID, userID uint, message string) (*entity.Chat, error) {
 	return createChatRecord(roomID, userID, message)
 }
 func (RepoOperator) GetAllChatByRoom(roomID uint) ([]*entity.Chat, error) {
@@ -233,13 +233,13 @@ func getUsersByRoomID(roomID uint) (*usersForRoom, error) {
 	return ufr, nil
 }
 
-func createChatRecord(roomID, userID uint, message string) error {
+func createChatRecord(roomID, userID uint, message string) (*entity.Chat, error) {
 	chat := entity.Chat{RoomID: roomID, UserID: userID, Message: message}
 	result := db.Create(&chat)
 	if result.RowsAffected != 1 || result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-	return nil
+	return &chat, nil
 }
 
 func getAllChatByRoom(roomID uint) ([]*entity.Chat, error) {

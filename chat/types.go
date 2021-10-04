@@ -3,6 +3,7 @@ package chat
 import (
 	"sync"
 
+	"github.com/chiwon99881/gone-chat/entity"
 	"github.com/gorilla/websocket"
 )
 
@@ -28,7 +29,8 @@ type participant struct {
 }
 
 type payload struct {
-	RoomID  string `json:"roomId"`
-	FromID  string `json:"fromId"`
-	Message string `json:"message"`
+	RoomID  uint         `json:"roomId"`
+	From    *entity.User `json:"from"`
+	Message string       `json:"message"`
+	Created int          `json:"created"`
 }

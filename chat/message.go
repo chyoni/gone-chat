@@ -3,10 +3,11 @@ package chat
 import (
 	"fmt"
 
+	"github.com/chiwon99881/gone-chat/entity"
 	"github.com/chiwon99881/gone-chat/utils"
 )
 
-func HandleMessage(message, roomID, userID string) {
+func HandleMessage(message, roomID string, user *entity.User, created int) {
 	rs.m.Lock()
 	defer rs.m.Unlock()
 
@@ -15,9 +16,10 @@ func HandleMessage(message, roomID, userID string) {
 		fmt.Println("error")
 	}
 	m := &payload{
-		RoomID:  roomID,
-		FromID:  userID,
+		RoomID:  utils.ToUintFromString(roomID),
+		From:    user,
 		Message: message,
+		Created: created,
 	}
 	mBytes := utils.ToBytes(m)
 	for _, member := range room.members {

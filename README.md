@@ -79,3 +79,5 @@
 - #26 Create Chat Entity and Create Chat Record
 
 - #27 Get All Messages By Room
+
+- #28 Refactoring Depends On Front-End
